@@ -25,7 +25,10 @@ const client = new MongoClient(uri, {
 
 const projectCollection = client.db("portfolio").collection("projects");
 const skillsCollection = client.db("portfolio").collection("skills");
+const backendSkillsCollection = client.db("portfolio").collection("backendSkills");
 const contactCollection = client.db("portfolio").collection("contacts");
+const blogsCollection = client.db("portfolio").collection("blogs");
+
 async function run() {
   try {
 
@@ -124,6 +127,21 @@ async function run() {
       const result = await skillsCollection.insertOne(skillsItem);
       res.send(result)
     })
+    // create backend skill api
+    app.post('/backendskills', async (req, res) => {
+      const skillsItem = req.body;
+      const result = await backendSkillsCollection.insertMany(skillsItem);
+      res.send(result)
+    })
+    // get backend api to server from db
+    app.get("/backendskills", async (req, res) => {
+      try {
+        const skills = await backendSkillsCollection.find({}).toArray();
+        res.send(skills);
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
     app.delete("/skills/:id", async (req, res) => {
       try {
@@ -136,7 +154,6 @@ async function run() {
       }
     });
 
-
     // contact data to db
     app.post('/contacts', async (req, res) => {
       const contactItem = req.body;
@@ -144,10 +161,33 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/contacts', verifyToken, async (req, res) => {
+    app.get('/contacts',  async (req, res) => {
       const result = await contactCollection.find({}).toArray();
       res.send(result)
     })
+
+    // Create / Post Blogs data into db
+    app.post('/blogs', async (req, res) => {
+      const blogItem = req.body;
+      const result = await blogsCollection.insertOne(blogItem);
+      res.send(result)
+    })
+
+    app.get('/blogs',  async (req, res) => {
+      const result = await blogsCollection.find({}).toArray();
+      res.send(result)
+    })
+
+    app.get("/blogs/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const blogs = await blogsCollection.findOne(query);
+        res.send(blogs);
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
     // jwt apiii(create jwt api)
     app.post('/jwt', (req, res) => {
